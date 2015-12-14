@@ -1,14 +1,11 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY" 
 % abbrev = "DS-maintain-ds"
 % category = "info"
-% docName = "draft-ogud-dnsop-maintain-ds-00"
+% docName = "draft-ietf-dnsop-maintain-ds-00"
 % ipr= "trust200902"
 % area = "Operations"
-% workgroup = ""
+% workgroup = "dnsop"
 % keyword = ["dnssec", "trust maintainance"]
-%
-% date = 2015-10-15T00:00:00Z
-%
 % [[author]]
 % initials="O."
 % surname="Gudmundsson"
@@ -17,7 +14,6 @@
 % organization = "CloudFlare"
 %   [author.address]
 %   email = "olafur+ietf@cloudflare.com"
-%   [author.address.postal]
 %   street = ""
 % [[author]]
 % fullname="Paul Wouters" 
@@ -27,8 +23,10 @@
 %  [author.address]
 %  email="pwouters@redhat.com"
 %  street=""
+% date = 2015-12-14T00:00:00Z
+% note=""
 
-.# Abstract
+# Abstract
 
 RFC7344 specifies how DNS trust can be maintained in-band between parent
 and child. There are two features missing in that specification:
@@ -265,8 +263,7 @@ will be enabled after a certain about of wait time - thus allowing
 a child administrator to cancel the request.
 
 This document does not introduce any new problems, but like Negative
-Trust Anchor[@?I-D.ietf-dnsop-negative-trust-anchors], it addresses
-operational reality.  
+Trust Anchor[@?RFC7646], it addresses operational reality.  
 
 
 # IANA considerations 
