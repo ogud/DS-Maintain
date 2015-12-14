@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rfc SYSTEM 'rfc2629.dtd' []>
+<rfc ipr="trust200902" category="info" docName="draft-ogud-dnsop-maintain-ds-00">
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<front>
+<title abbrev="DS-maintain-ds">Managing DS records from parent via CDS/CDNSKEY</title>
+
+<author initials="O." surname="Gudmundsson" fullname="Olafur Gudmundsson">
+<organization>CloudFlare</organization>
+<address>
+<postal>
+<street></street>
+<city></city>
+<code></code>
+<country></country>
+</postal>
+<email>olafur+ietf@cloudflare.com</email>
+<uri></uri>
+</address>
+</author>
+<author initials="P." surname="Wouters" fullname="Paul Wouters">
+<organization>Red Hat</organization>
+<address>
+<postal>
+<street></street>
+<city></city>
+<code></code>
+<country></country>
+</postal>
+<email>pwouters@redhat.com</email>
+<uri></uri>
+</address>
+</author>
+<date year="2015" month="October" day="15"/>
+
+<area>Operations</area>
+<workgroup></workgroup>
+<keyword>dnssec</keyword>
+<keyword>trust maintainance</keyword>
+
+
+<abstract>
+<t>RFC7344 specifies how DNS trust can be maintained in-band between parent
+and child. There are two features missing in that specification:
+initial trust setup and removal of trust anchor. This document
+addresses both these omissions.
+</t>
+<t>Changing a domain's DNSSEC status can be a complicated matter involving
+many parties. Some of these parties, such as the DNS operator, might
+not even be known by all organisations involved. The inability to
+enable or disable DNSSEC via in-band signalling is seen as a problem
+or liability that prevents DNSSEC adoption at large scale. This
+document adds a method for in-band signalling of DNSSEC status changes.
+</t>
+<t>Initial trust is considered a much harder problem, this document will
+seek to clarify and simplify the initial acceptance policy.
+</t>
+</abstract>
+
+</front>
+
+<middle>
+
+<section anchor="introduction" title="Introduction">
+<t>CDS/CDNSKEY <xref target="RFC7344"/> records are used to signal changes in trust
+anchors, this is a great way to maintain delegations when the DNS
+operator has no other way to inform the parent that changes are
+needed. RFC7344 contains no &quot;delete&quot; signal for the child to tell the parent
+that it wants to change the DNSSEC security of its domain.
+</t>
+<t><xref target="RFC7344"/> punted the Initial Trust establishment question and
+left it to each parent to come up with an acceptance policy.
+</t>
+
+<section anchor="removing-ds" title="Removing DS">
+<t>This document introduces the delete option for both CDS and CDNSKEY.
+to allow a child to signal the parent to turn off DNSSEC.
+When a domain is moved from one DNS operator to another one, sometimes
+it is necessary to turn off DNSSEC to facilitate the change of DNS
+operator. Common scenarios include:
+<vspace/>
+
+</t>
+<t>
+<list style="format %d">
+<t>moving from a DNSSEC operator to a non-DNSSEC capable one or one
+that does not support the same algorithms as the old one.</t>
+<t>moving to one that cannot/does-not-want to do a proper DNSSEC rollover.</t>
+<t>the domain holder does not want DNSSEC.</t>
+<t>when moving between two DNS operators that use disjoint sets of
+algorithms to sign the zone, thus algorithm roll can not be performed.</t>
+</list>
+</t>
+<t>Whatever the reason, the lack of a &quot;remove my DNSSEC&quot; option is turning
+into the latest excuse as why DNSSEC cannot be deployed.
+</t>
+<t>Turing off DNSSEC reduces the security of the domain and thus should
+only be done carefully, and that decision should be fully under the
+child domain's control.
+</t>
+</section>
+
+<section anchor="introducing-ds" title="Introducing DS">
+<t>The converse issue is how does a child domain instruct the parent it
+wants to have a DS record added. This problem is not as hard as many
+have assumed, given a few simplifying assumptions. This document makes
+the assumption that there are reasonable policies that can be applied
+and will allow automation of trust introduction.
+</t>
+<t>Not being able to enable trust via an easily automated mechanism is
+hindering DNSSEC at scale by anyone that does not have automated access to
+its parent's &quot;registry&quot;.
+</t>
+</section>
+
+<section anchor="notation" title="Notation">
+<t>When this document uses the word CDS it implies that the same applies
+to CDNSKEY and vice versa, the only difference between the two
+records is how information is represented.
+</t>
+<t>When the document uses the word &quot;parent&quot; it implies an entity that is
+authorized to insert into parent zone information about this child
+domain. Which entity this is exactly does not matter. It could be
+the Registrar or Reseller that the child domain was purchased from. It
+could be the Registry that the domain is registered in when
+allowed. It could be some other entity when the RRR framework is not
+used.
+</t>
+<t>We use RRR to mean Registry Registrar Reseller in the context of DNS domain markets.
+</t>
+</section>
+
+<section anchor="terminology" title="Terminology">
+<t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
+&quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this
+document are to be interpreted as described in <xref target="RFC2119"/>.
+</t>
+</section>
+</section>
+
+<section anchor="the-three-uses-of-cds" title="The Three Uses of CDS">
+<t>In general there are three operations that a domain wants to influence
+on its parent:
+
+</t>
+<t>
+<list style="format %d">
+<t>Roll over KSK, this means updating the DS records in the parent to
+reflect the new set of KSK's at the child. This could be an ADD
+operation, a Delete operation on one or more records while keeping at
+least one DS RR, or a full Replace operation</t>
+<t>Turn off DNSSEC validation, i.e. delete all the DS records</t>
+<t>Enable DNSSEC validation, i.e. place initial DS RRset in the parent.</t>
+</list>
+</t>
+<t>Operation 1 is covered in <xref target="RFC7344"/>, operations 2 and 3 are defined in this
+document. In many people's minds, those two later operations carry more
+risk than the first one. This document argues that 2 is identical to 1
+and the final one is different (but not that different).
+</t>
+
+<section anchor="the-meaning-of-cds-" title="The meaning of CDS ?">
+<t>The fundamental question is what is the semantic meaning of publishing
+a CDS RRset in a zone? We offer the following interpretation:
+</t>
+<t>&quot;Publishing a CDS or CDNSKEY record signifies to the parent that the
+child is ready for the corresponding DS records to be
+synchronized. Every parent or parental agent should have an acceptance
+policy of these records for the three different use cases involved:
+Initial DS publication, Key rollover, and Returning to Insecure.&quot;
+</t>
+<t>In short, the CDS RRset is an instruction to the parent to modify DS RRset if
+the CDS and DS RRsets differ. The acceptance policy for CDS in the rollover
+case is &quot;seeing&quot; according to <xref target="RFC7344"/>. The acceptance policy in the Delete
+case is just seeing a CDS RRset with the delete operation specified in this
+document.
+</t>
+</section>
+</section>
+
+<section anchor="enabling-dnssec-via-cdscdnskey" title="Enabling DNSSEC via CDS/CDNSKEY">
+<t>There are number of different models for managing initial trust, but in
+the general case, the child wants to enable global validation for the future.
+Thus during the period from the time the child publishes the CDS until the
+corresponding DS is published is the period that DNS answers for the
+child could be forged. The goal is to keep this period as short as
+possible.
+</t>
+<t>One important case is how a 3rd party DNS operator can upload
+its DNSSEC information to the parent, so the parent can publish
+a DS record for the child.
+In this case there is a possibility of setting
+up some kind of authentication mechanism and submission mechanism that
+is outside the scope of this document.
+</t>
+<t>Below are some policies that parents can use. These policies assume that
+the notifications are can be authenticated and/or identified.
+</t>
+
+<section anchor="accept-policy-via-authenticated-channel" title="Accept policy via authenticated channel">
+<t>In this case the parent is notified via UI/API that CDS exists, the parent
+retrieves the CDS and inserts the DS record as requested, if the request
+comes over an authenticated channel.
+</t>
+</section>
+
+<section anchor="accept-with-extra-checks" title="Accept with extra checks">
+<t>In this case the parent checks that the source of the notification is
+allowed to request the DS insertion. The checks could include whether this is
+a trusted entity, whether the nameservers correspond to the requestor, whether
+there have been any changes in registration in the last few days, etc, or
+the parent can send a notification requesting an confirmation.
+</t>
+<t>The end result is that the CDS is accepted at the end of the checks or when the
+out-of-band confirmation is received.
+</t>
+</section>
+
+<section anchor="accept-after-delay" title="Accept after delay">
+<t>In this case, if the parent deems the request valid, it starts
+monitoring the CDS records at the child nameservers over period of
+time to make sure nothing changes. After number of checks, preferably
+from different vantage points, the parent accepts the CDS records as
+a valid signal to update.
+</t>
+</section>
+
+<section anchor="accept-with-challenge" title="Accept with challenge">
+<t>In this case the parent instructs the requestor to insert some record
+into the child domain to prove it has the ability to do so (i.e., it is
+the operator of the zone).
+</t>
+</section>
+</section>
+
+<section anchor="dnssec-delete-algorithm" title="DNSSEC Delete Algorithm">
+<t>The DNSKEY algorithm registry contains two reserved values: 0 and 255<xref target="RFC4034"/>.
+The CERT record <xref target="RFC4398"/> defines the value 0 to mean the algorithm
+in the CERT record is not defined in DNSSEC.
+</t>
+<t>[rfc-editor remove before publication]
+For this reason, using the value 0 in CDS/CDNSKEY delete operations is
+potentially problematic, but we propose that here anyway as the risk
+is minimal. The alternative is to reserve one DNSSEC algorithm number
+for this purpose.
+[rfc-editor end remove]
+</t>
+<t>Right now, no DNSSEC validator understands algorithm 0 as a valid
+signature algorithm, thus if the validator sees a DNSKEY or DS record
+with this value, it will treat it as unknown. Accordingly, the zone is
+treated as unsigned unless there are other algorithms present.
+</t>
+<t>In the context of CDS and CDNSKEY records, DNSSEC algorithm 0 is
+defined and means the entire DS set MUST be removed. The contents of the records MUST
+contain only the fixed fields as show below.
+
+</t>
+<t>
+<list style="format %d">
+<t>CDS 0 0 0</t>
+<t>CDNSKEY 0 3 0</t>
+</list>
+</t>
+<t>There is no keying material payload in the records, just the command to
+delete all DS records. This record is signed in the same way as
+CDS/CDNSKEY is signed.
+</t>
+<t>Strictly speaking the CDS record could be &quot;CDS X 0 X&quot; as only the
+DNSKEY algorithm is what signals the delete operation, but for clarity
+the &quot;0 0 0&quot; notation is mandated, this is not a definition of DS
+Digest algorithm 0. Same argument applies to &quot;CDNSKEY 0 3 0&quot;.
+</t>
+<t>Once the parent has verified the CDS/CDNSKEY record and it has passed
+other acceptance tests, the DS record MUST be removed. At this point
+the child can start the process of turning DNSSEC off.
+</t>
+</section>
+
+<section anchor="security-considerations" title="Security considerations">
+<t>This document is about avoiding validation failures when a domain moves from
+one DNS operator to another one. Turing off DNSSEC reduces the security of the
+domain and thus should only be done as a last resort.
+</t>
+<t>In most cases it is preferable that operators collaborate on the
+rollover by doing a KSK+ZSK rollover as part of the handoff, but that
+is not always possible. This document addresses the case where
+unsigned state is needed.
+</t>
+<t>Users SHOULD keep in mind that re-establishing trust in delegation can be
+hard and take a long time thus before going to unsigned all options
+SHOULD be considered.
+</t>
+<t>A parent should ensure that when it is allowing a child to become
+securely delegated, that it has a reasonable assurance that the
+CDS/CDNSKEY that is used to bootstrap the security on is visible
+from a geographically and network topology diverse view. It should
+also ensure the the zone would validate if the parent published the
+DS record. A parent zone might also consider sending an email to
+its contact addresses to give the child a warning that security
+will be enabled after a certain about of wait time - thus allowing
+a child administrator to cancel the request.
+</t>
+<t>This document does not introduce any new problems, but like Negative
+Trust Anchor<xref target="I-D.ietf-dnsop-negative-trust-anchors"/>, it addresses
+operational reality.
+</t>
+</section>
+
+<section anchor="iana-considerations" title="IANA considerations">
+<t>This document updates the following IANA registries: &quot;DNS Security
+Algorithm Numbers&quot;
+</t>
+<t>Algorithm 0 adds a reference to this document.
+</t>
+</section>
+
+</middle>
+<back>
+<references title="Normative References">
+<?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.4034.xml"?>
+<?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.7344.xml"?>
+</references>
+<references title="Informative References">
+<?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?>
+<?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.4398.xml"?>
+<?rfc include="http://xml.resource.org/public/rfc/bibxml3/reference.I-D.draft-ietf-dnsop-negative-trust-anchors-13.xml"?>
+</references>
+
+<section anchor="acknowledgements" title="Acknowledgements">
+<t>This document is generated using the mmark tool that Miek Gieben has developed.
+</t>
+</section>
+
+</back>
+</rfc>
