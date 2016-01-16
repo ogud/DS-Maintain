@@ -1,7 +1,7 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY" 
 % abbrev = "DS-maintain-ds"
 % category = "info"
-% docName = "draft-ietf-dnsop-maintain-ds-00"
+% docName = "draft-ietf-dnsop-maintain-ds-00aa"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
@@ -23,16 +23,15 @@
 %  [author.address]
 %  email="pwouters@redhat.com"
 %  street=""
-% date = 2015-12-14T00:00:00Z
+% date = 2016-01-16T00:00:00Z
 % note=""
 
 # Abstract
 
-RFC7344 specifies how DNS trust can be maintained in-band between parent
+RFC7344 specifies how DNS trust can be partially maintained in-band between parent
 and child. There are two features missing in that specification:
 initial trust setup and removal of trust anchor. This document
 addresses both these omissions.
-
 
 Changing a domain's DNSSEC status can be a complicated matter involving
 many parties. Some of these parties, such as the DNS operator, might
@@ -136,8 +135,8 @@ and the final one is different (but not that different).
 The fundamental question is what is the semantic meaning of publishing
 a CDS RRset in a zone? We offer the following interpretation: 
 
-"Publishing a CDS or CDNSKEY record signifies to the parent that the
-child is ready for the corresponding DS records to be
+"Publishing a CDS or CDNSKEY record signals to the parent that the
+child desires that the corresponding DS records to be
 synchronized. Every parent or parental agent should have an acceptance
 policy of these records for the three different use cases involved:
 Initial DS publication, Key rollover, and Returning to Insecure." 
@@ -239,7 +238,7 @@ the child can start the process of turning DNSSEC off.
 
 # Security considerations 
 
-This document is about avoiding validation failures when a domain moves from
+This document main goail is to avoid validation failures when a domain moves from
 one DNS operator to another one. Turing off DNSSEC reduces the security of the
 domain and thus should only be done as a last resort.
 
@@ -252,10 +251,10 @@ Users SHOULD keep in mind that re-establishing trust in delegation can be
 hard and take a long time thus before going to unsigned all options
 SHOULD be considered.
 
-A parent should ensure that when it is allowing a child to become
+A parent SHOULD ensure that when it is allowing a child to become
 securely delegated, that it has a reasonable assurance that the
 CDS/CDNSKEY that is used to bootstrap the security on is visible
-from a geographically and network topology diverse view. It should
+from a geographically and network topology diverse view. It SHOULD
 also ensure the the zone would validate if the parent published the
 DS record. A parent zone might also consider sending an email to
 its contact addresses to give the child a warning that security
