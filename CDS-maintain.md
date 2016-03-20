@@ -1,7 +1,7 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY"
 % abbrev = "DS-maintain-ds"
 % category = "info"
-% docName = "draft-ietf-dnsop-maintain-ds-00ab"
+% docName = "draft-ietf-dnsop-maintain-ds-01"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
