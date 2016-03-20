@@ -33,12 +33,12 @@ and child. There are two features missing in that specification:
 initial trust setup and removal of trust anchor. This document
 addresses both these omissions.
 
-Changing a domains DNSSEC status can be a complicated matter involving
-many parties. Some of these parties, such as the DNS operator, might
+Changing a domain's DNSSEC status can be a complicated matter involving
+muliple unrelated parties. Some of these parties, such as the DNS operator, might 
 not even be known by all organisations involved. The inability to
-enable or disable DNSSEC via in-band signalling is seen as a problem
+disable DNSSEC via in-band signalling is seen as a problem
 or liability that prevents some DNSSEC adoption at large scale. This
-document adds a method for in-band signalling of DNSSEC status changes.
+document adds a method for in-band signalling of this DNSSEC status changes.
 
 Initial trust is considered a much harder problem, this document will
 seek to clarify and simplify the initial acceptance policy.
@@ -51,7 +51,7 @@ CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust
 anchors, this is a great way to maintain delegations when the DNS
 operator has no other way to inform the parent that changes are
 needed. RFC7344 contains no "delete" signal for the child to tell the parent
-that it wants to change the DNSSEC security of its domain.
+that it wants to remove the DNSSEC security for its domain.
 
 
 [@!RFC7344] avoided the question of the Initial Trust establishment and
@@ -59,21 +59,21 @@ left it to each parent to come up with an acceptance policy.
 
 ## Removing DS
 
-This document introduces the delete option for both CDS and CDNSKEY
-to allow a child to signal the parent to turn off DNSSEC.
+This document introduces the delete option for both CDS and CDNSKEY,
+allowing a child to signal to the parent to turn off DNSSEC.
 When a domain is moved from one DNS operator to another one, sometimes
 it is necessary to turn off DNSSEC to facilitate the change of DNS
 operator. Common scenarios include:
 {style="format %d"}
-1. moving from a DNSSEC operator to a non-DNSSEC capable one or one
-that does not support the same algorithms as the old one.
-2. moving to one that cannot/does-not-want to do a proper DNSSEC rollover.
-3. the domain holder does not want DNSSEC.
+1. alternative to doing a proper DNSSEC algorithm rollover due to some limitations.
+2. moving from a DNSSEC operator to a non-DNSSEC capable one.
+3. moving to one that cannot/does-not-want to do a proper DNSSEC rollover.
 4. when moving between two DNS operators that use disjoint sets of
 algorithms to sign the zone, thus algorithm roll can not be performed.
+5. the domain holder does not want DNSSEC anymore.
 
 The lack of a "remove my DNSSEC" option is cited as a reason why
-DNSSEC cannot be deployed.
+DNSSEC cannot be deployed, as this is seen as an operational risk. 
 
 Turing off DNSSEC reduces the security of the domain and thus should
 only be done carefully, and that decision should be fully under the
