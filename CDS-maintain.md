@@ -5,7 +5,7 @@
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
-% keyword = ["dnssec", "trust maintainance"]
+% keyword = ["dnssec", "trust maintenance"]
 % [[author]]
 % initials="O."
 % surname="Gudmundsson"
@@ -23,7 +23,7 @@
 %  [author.address]
 %  email="pwouters@redhat.com"
 %  street=""
-% date = 2016-01-18T00:00:00Z
+% date = 2016-03-20T00:00:00Z
 % note=""
 
 .# Abstract
@@ -34,8 +34,8 @@ initial trust setup and removal of trust anchor. This document
 addresses both these omissions.
 
 Changing a domain's DNSSEC status can be a complicated matter involving
-muliple unrelated parties. Some of these parties, such as the DNS operator, might 
-not even be known by all organisations involved. The inability to
+multiple unrelated parties. Some of these parties, such as the DNS operator, might 
+not even be known by all organizations involved. The inability to
 disable DNSSEC via in-band signalling is seen as a problem
 or liability that prevents some DNSSEC adoption at large scale. This
 document adds a method for in-band signalling of this DNSSEC status changes.
@@ -52,7 +52,6 @@ anchors, this is a great way to maintain delegations when the DNS
 operator has no other way to inform the parent that changes are
 needed. RFC7344 contains no "delete" signal for the child to tell the parent
 that it wants to remove the DNSSEC security for its domain.
-
 
 [@!RFC7344] avoided the question of the Initial Trust establishment and
 left it to each parent to come up with an acceptance policy.
@@ -133,7 +132,7 @@ and the final one is different (but not that different).
 
 ## The meaning of the CDS RRset?
 
-The semantic meaning of publishing a CDS RRset is interpretated to mean:
+The semantic meaning of publishing a CDS RRset is interpreted to mean:
 
 "Publishing a CDS or CDNSKEY record signals to the parent that the
 child desires that the corresponding DS records be synchronized. Every
@@ -176,7 +175,7 @@ channel.
 
 In this case the parent checks that the source of the notification is
 allowed to request the DS insertion. The checks could include whether this is
-a trusted entity, whether the nameservers correspond to the requestor, whether
+a trusted entity, whether the name-servers correspond to the requestor, whether
 there have been any changes in registration in the last few days, etc.
 The parent can also send a notification requesting an confirmation.
 
@@ -186,7 +185,7 @@ or when the out-of-band confirmation is received.
 ## Accept after delay
 
 In this case, if the parent deems the request valid, it starts monitoring
-the CDS RRset at the child nameservers over period of time to make sure
+the CDS RRset at the child name-servers over period of time to make sure
 nothing changes. After some time or after a number of checks, preferably
 from different vantage points in the network, the parent accepts the
 CDS RRset as a valid signal to update its DS RRset for this child.
@@ -229,8 +228,8 @@ is signed in the same way as CDS/CDNSKEY is signed.
 Strictly speaking the CDS record could be "CDS X 0 X" as only the
 DNSKEY algorithm is what signals the DELETE operation, but for clarity
 the "0 0 0" notation is mandated - this is not a definition of DS
-Digest algorithm 0. The same argument applies to "CDNSKEY 0 3 0".
-[Paul: should that be 0 X 0 instead of 0 3 0?]
+Digest algorithm 0. The same argument applies to "CDNSKEY 0 3 0", 
+the value 3 in second field is mandated by RFC4034 section 2.1.2. 
 
 Once the parent has verified the CDS/CDNSKEY RRset and it has passed
 other acceptance tests, the parent MUST remove the DS RRset. After waiting
@@ -240,12 +239,12 @@ can start the process of turning off DNSSEC.
 
 # Security considerations
 
-This document's main goail is to avoid validation failures when a domain moves from
+This document's main goal is to avoid validation failures when a domain moves from
 one DNS operator to another. Turning off DNSSEC reduces the security of the
 domain and thus should only be done as a last resort.
 
 In most cases it is preferable that operators collaborate on the
-rollover by doing a KSK+ZSK rollover as part of the handoff, but that
+rollover by doing a KSK+ZSK rollover as part of the hand-off, but that
 is not always possible. This document addresses the case where
 unsigned state is needed to complete a rollover.
 
@@ -262,10 +261,6 @@ DS record. A parent zone might also consider sending an email to
 its contact addresses to give the child a warning that security
 will be enabled after a certain about of wait time - thus allowing
 a child administrator to cancel the request.
-
-This document does not introduce any new problems, but like Negative
-Trust Anchor[@?RFC7646], it addresses operational reality.
-[Paul: I don't like this sentence. Can we remove it altogether?]
 
 # IANA considerations
 
