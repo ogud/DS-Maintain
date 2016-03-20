@@ -48,15 +48,15 @@ seek to clarify and simplify the initial acceptance policy.
 # Introduction
 
 CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust
-anchors, this is a great way to maintain delegations when the DNS
-operator has no other way to inform the parent that changes are
+anchors, this is one method to maintain delegations that can be used when
+the DNS operator has no other way to inform the parent that changes are
 needed. RFC7344 contains no "delete" signal for the child to tell the parent
 that it wants to remove the DNSSEC security for its domain.
 
-[@!RFC7344] avoided the question of the Initial Trust establishment and
+[@!RFC7344] did not include a method for the Initial Trust establishment and
 left it to each parent to come up with an acceptance policy.
 
-## Removing DS
+## Removing a DS Record
 
 This document introduces the delete option for both CDS and CDNSKEY,
 allowing a child to signal to the parent to turn off DNSSEC.
@@ -64,21 +64,22 @@ When a domain is moved from one DNS operator to another one, sometimes
 it is necessary to turn off DNSSEC to facilitate the change of DNS
 operator. Common scenarios include:
 {style="format %d"}
-1. alternative to doing a proper DNSSEC algorithm rollover due to some limitations.
-2. moving from a DNSSEC operator to a non-DNSSEC capable one.
-3. moving to one that cannot/does-not-want to do a proper DNSSEC rollover.
-4. when moving between two DNS operators that use disjoint sets of
-algorithms to sign the zone, thus algorithm roll can not be performed.
-5. the domain holder does not want DNSSEC anymore.
+1. alternative to doing a proper DNSSEC algorithm rollover due to operational
+limitations such as software limitations.
+2. moving from a DNSSEC operator to a non-DNSSEC capable operator.
+3. moving to an operator that cannot/does-not-want to do a proper DNSSEC rollover.
+4. when moving between two DNS operators that use disjoint sets of algorithms
+to sign the zone, thus an algorithm rollover can not be performed.
+5. the domain holder no longer wants DNSSEC enabled.
 
 The lack of a "remove my DNSSEC" option is cited as a reason why
-DNSSEC cannot be deployed, as this is seen as an operational risk. 
+some operators cannot deploy DNSSEC, as this is seen as an operational risk.
 
-Turing off DNSSEC reduces the security of the domain and thus should
+Turning off DNSSEC reduces the security of the domain and thus should
 only be done carefully, and that decision should be fully under the
 child domain's control.
 
-## Introducing DS
+## Introducing a DS record
 
 The converse issue is how a child domain instructs the parent that it
 wants to have a DS record added. This problem can be solved using a
@@ -87,8 +88,8 @@ there are reasonable policies that can be applied and will allow automation
 of trust introduction.
 
 Not being able to enable trust via an easily automated mechanism is
-hindering DNSSEC at scale for any DNS hoster that does not have automated
-access to the parent's "registry" of the the child zone.
+hindering DNSSEC at scale for DNS hosters that do not have automated
+access to the "registry" of the child zone's parent.
 
 ## Notation
 
@@ -96,11 +97,11 @@ When this document uses the word CDS it implies that the same applies
 to CDNSKEY and vice versa. The only difference between the two
 records is how information is represented.
 
-We use RRR to mean Registry Registrar Reseller in the context of DNS
+We use RRR to mean Registry Registrar Registrant in the context of DNS
 domain markets.
 
 When the document uses the word "parent" it implies an entity that is
-authorized to insert into parent zone information about this child
+authorized to insert DS records into the parent zone on behalf of the child
 domain. Which entity this exactly is does not matter. It could be
 the Registrar or Reseller that the child domain was purchased from. It
 could be the Registry that the domain is registered in when
@@ -121,16 +122,16 @@ on its parent:
 1. Roll over KSK, this means updating the DS records in the parent to
 reflect the new set of KSK's at the child. This could be an ADD
 operation, a DELETE operation on one or more records while keeping at
-least one DS RR, or a full REPLACE operation
-2. Turn off DNSSEC validation, i.e. delete all the DS records
-3. Enable DNSSEC validation, i.e. place initial DS RRset in the parent.
+least one DS RR, or a full REPLACE operation.
+2. Turn off DNSSEC validation, i.e. delete all the DS records.
+3. Enable DNSSEC validation, i.e. place an initial DS RRset in the parent.
 
 Operation 1 is covered in [@!RFC7344], operations 2 and 3 are defined in this
 document. In many people's minds, those two later operations carry more
 risk than the first one. This document argues that 2 is identical to 1
-and the final one is different (but not that different).
+and the third one is different (but not that different).
 
-## The meaning of the CDS RRset?
+## The meaning of the CDS RRset
 
 The semantic meaning of publishing a CDS RRset is interpreted to mean:
 
@@ -143,8 +144,8 @@ Initial DS publication, Key rollover, and Returning to Insecure."
 In short, the CDS RRset is an instruction to the parent to modify DS RRset if
 the CDS and DS RRsets differ. The acceptance policy for CDS in the rollover
 case is "seeing" according to [@!RFC7344]. The acceptance policy in the Delete
-case is just seeing a CDS RRset with the delete operation specified in this
-document.
+case is seeing a (validly signed) CDS RRset with the delete operation
+specified in this document.
 
 # Enabling DNSSEC via CDS/CDNSKEY
 
@@ -175,9 +176,9 @@ channel.
 
 In this case the parent checks that the source of the notification is
 allowed to request the DS insertion. The checks could include whether this is
-a trusted entity, whether the name-servers correspond to the requestor, whether
+a trusted entity, whether the nameservers correspond to the requestor, whether
 there have been any changes in registration in the last few days, etc.
-The parent can also send a notification requesting an confirmation.
+The parent can also send a notification requesting a confirmation.
 
 The end result is that the CDS RRset is accepted at the end of the checks
 or when the out-of-band confirmation is received.
@@ -185,7 +186,7 @@ or when the out-of-band confirmation is received.
 ## Accept after delay
 
 In this case, if the parent deems the request valid, it starts monitoring
-the CDS RRset at the child name-servers over period of time to make sure
+the CDS RRset at the child nameservers over period of time to make sure
 nothing changes. After some time or after a number of checks, preferably
 from different vantage points in the network, the parent accepts the
 CDS RRset as a valid signal to update its DS RRset for this child.
@@ -223,7 +224,7 @@ fields as shown below.
 2.    CDNSKEY 0 3 0
 
 The keying material payload is represented by a single 0. This record
-is signed in the same way as CDS/CDNSKEY is signed.
+is signed in the same way as regular CDS/CDNSKEY RRsets are signed.
 
 Strictly speaking the CDS record could be "CDS X 0 X" as only the
 DNSKEY algorithm is what signals the DELETE operation, but for clarity
@@ -249,16 +250,16 @@ is not always possible. This document addresses the case where
 unsigned state is needed to complete a rollover.
 
 Users SHOULD keep in mind that re-establishing trust in delegation can
-be hard and take a long time. Before deciding to complete the rollover
+be hard and takes a long time. Before deciding to complete the rollover
 via an unsigned state, all options SHOULD be considered.
 
 A parent SHOULD ensure that when it is allowing a child to become
 securely delegated, that it has a reasonable assurance that the
 CDS/CDNSKEY RRset that is used to bootstrap the security is visible
 from a geographically and network topology diverse view. It SHOULD
-also ensure the the zone would validate if the parent published the
+also ensure the the zone validates correctly if the parent publishes the
 DS record. A parent zone might also consider sending an email to
-its contact addresses to give the child a warning that security
+its contact addresses to give the child zone a warning that security
 will be enabled after a certain about of wait time - thus allowing
 a child administrator to cancel the request.
 
