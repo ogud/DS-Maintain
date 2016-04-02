@@ -47,11 +47,11 @@ seek to clarify and simplify the initial acceptance policy.
 
 # Introduction
 
-CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust
-anchors, this is one method to maintain delegations that can be used when
-the DNS operator has no other way to inform the parent that changes are
-needed. RFC7344 contains no "delete" signal for the child to tell the parent
-that it wants to remove the DNSSEC security for its domain.
+CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust anchors,
+this is one method to maintain delegations that can be used when the DNS
+operator has no other way to inform the parent that changes are needed.
+[@!RFC7344] contains no "delete" signal for the child to tell the parent that
+it wants to remove the DNSSEC security for its domain.
 
 [@!RFC7344] did not include a method for the Initial Trust establishment and
 left it to each parent to come up with an acceptance policy.
@@ -141,8 +141,8 @@ parent or parental agent should have an acceptance policy of these
 records for the three different use cases involved:
 Initial DS publication, Key rollover, and Returning to Insecure."
 
-In short, the CDS RRset is an instruction to the parent to modify DS RRset if
-the CDS and DS RRsets differ. The acceptance policy for CDS in the rollover
+In short, the CDS RRset is an instruction to the parent to modify the DS RRset
+if the CDS and DS RRsets differ. The acceptance policy for CDS in the rollover
 case is "seeing" according to [@!RFC7344]. The acceptance policy in the Delete
 case is seeing a (validly signed) CDS RRset with the delete operation
 specified in this document.
@@ -232,10 +232,10 @@ the "0 0 0" notation is mandated - this is not a definition of DS
 Digest algorithm 0. The same argument applies to "CDNSKEY 0 3 0", 
 the value 3 in second field is mandated by RFC4034 section 2.1.2. 
 
-Once the parent has verified the CDS/CDNSKEY RRset and it has passed
-other acceptance tests, the parent MUST remove the DS RRset. After waiting
-a sufficient amount of time - depending the the parental TTL's - the child
-can start the process of turning off DNSSEC.
+Once the parent has verified the CDS/CDNSKEY RRset and it has passed other
+acceptance tests, the parent MUST remove the DS RRset. After waiting a
+sufficient amount of time - depending on the parental TTLs - the child can
+start the process of turning off DNSSEC.
 
 
 # Security considerations
@@ -256,8 +256,8 @@ via an unsigned state, all options SHOULD be considered.
 A parent SHOULD ensure that when it is allowing a child to become
 securely delegated, that it has a reasonable assurance that the
 CDS/CDNSKEY RRset that is used to bootstrap the security is visible
-from a geographically and network topology diverse view. It SHOULD
-also ensure the the zone validates correctly if the parent publishes the
+from a geographically and topologically diverse view. It SHOULD
+also ensure that the zone validates correctly if the parent publishes the
 DS record. A parent zone might also consider sending an email to
 its contact addresses to give the child zone a warning that security
 will be enabled after a certain about of wait time - thus allowing
