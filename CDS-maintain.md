@@ -1,7 +1,7 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY"
 % abbrev = "DS-maintain-ds"
 % category = "info"
-% docName = "draft-ietf-dnsop-maintain-ds-01"
+% docName = "draft-ietf-dnsop-maintain-ds-02-pre"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
@@ -23,7 +23,7 @@
 %  [author.address]
 %  email="pwouters@redhat.com"
 %  street=""
-% date = 2016-03-20T00:00:00Z
+% date = 2016-04-03T00:00:00Z
 % note=""
 
 .# Abstract
