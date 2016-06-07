@@ -1,11 +1,12 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY"
 % abbrev = "DS-maintain-ds"
-% category = "info"
-% docName = "draft-ietf-dnsop-maintain-ds-02"
+% category = "std"
+% docName = "draft-ietf-dnsop-maintain-ds-03aa"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
 % keyword = ["dnssec", "trust maintenance"]
+% updates =[7344]
 % [[author]]
 % initials="O."
 % surname="Gudmundsson"
@@ -23,7 +24,7 @@
 %  [author.address]
 %  email="pwouters@redhat.com"
 %  street=""
-% date = 2016-04-04T00:00:00Z
+% date = 2016-06-07T00:00:00Z
 % note=""
 
 .# Abstract
@@ -40,8 +41,8 @@ disable DNSSEC via in-band signalling is seen as a problem
 or liability that prevents some DNSSEC adoption at large scale. This
 document adds a method for in-band signalling of this DNSSEC status changes.
 
-Initial trust is considered a much harder problem, this document will
-seek to clarify and simplify the initial acceptance policy.
+Initial trust is considered in general to be a hard technical problem, this document sets forth
+reasonable policies that clarify and simplify the initial acceptance policy.
 
 {mainmatter}
 
@@ -94,7 +95,7 @@ access to the "registry" of the child zone's parent.
 ## Notation
 
 When this document uses the word CDS it implies that the same applies
-to CDNSKEY and vice versa. The only difference between the two
+to CDNSKEY and vice verse. The only difference between the two
 records is how information is represented.
 
 We use RRR to mean Registry Registrar Registrant in the context of DNS
@@ -142,7 +143,7 @@ records for the three different use cases involved:
 Initial DS publication, Key rollover, and Returning to Insecure."
 
 In short, the CDS RRset is an instruction to the parent to modify the DS RRset
-if the CDS and DS RRsets differ. The acceptance policy for CDS in the rollover
+if the CDS and DS Reset's differ. The acceptance policy for CDS in the rollover
 case is "seeing" according to [@!RFC7344]. The acceptance policy in the Delete
 case is seeing a (validly signed) CDS RRset with the delete operation
 specified in this document.
@@ -167,19 +168,19 @@ the notifications can be verified or authenticated.
 
 ## Accept policy via authenticated channel
 
-In this case the parent is notified via UI/API that a CDS RRset
-exists. The parent retrieves the CDS and inserts the corresponding DS
-RRset as requested, provided that the request comes over an authenticated
-channel.
+In this case the parent is notified via authenticated channel UI/API that a CDS/CDNSKEY RRset
+exists. In the case of a CDS RRset the parent retrieves the CDS and inserts the corresponding DS
+RRset as requested. In the case of CDNSKEY the parent retrieves the CDNSKEY RRset and calculates the DS
+record(s). 
 
 ## Accept with extra checks
 
 In this case the parent checks that the source of the notification is
 allowed to request the DS insertion. The checks could include whether this is
-a trusted entity, whether the nameservers correspond to the requestor, whether
+a trusted entity, whether the nameservers correspond to the requester, whether
 there have been any changes in registration in the last few days, etc.
-The parent can also send a notification requesting a confirmation.
-
+The parent can also send a notification requesting a confirmation, 
+for example by sending email to the registrant requesting a confirmation.
 The end result is that the CDS RRset is accepted at the end of the checks
 or when the out-of-band confirmation is received.
 
@@ -193,7 +194,7 @@ CDS RRset as a valid signal to update its DS RRset for this child.
 
 ## Accept with challenge
 
-In this case the parent instructs the requestor to insert some record
+In this case the parent instructs the requester to insert some record
 into the child domain to prove it has the ability to do so (i.e., it is
 the operator of the zone).
 
@@ -203,28 +204,29 @@ The DNSKEY algorithm registry contains two reserved values: 0 and 255[@!RFC4034]
 The CERT record [@RFC4398] defines the value 0 to mean the algorithm
 in the CERT record is not defined in DNSSEC.
 
-[rfc-editor remove before publication]
 For this reason, using the value 0 in CDS/CDNSKEY delete operations is
 potentially problematic, but we propose it here anyway as the risk
 is minimal. The alternative is to reserve a DNSSEC algorithm number
 for this purpose.
-[rfc-editor end remove]
 
 Right now, no DNSSEC validator understands algorithm 0 as a valid
 signature algorithm. If a validator sees a DNSKEY or DS record
 with this algorithm value, it MUST treat it as unknown. Accordingly, the zone is
 treated as unsigned unless there are other algorithms present.
+In general the value 0 should never be used in the context of DNSKEY and DS records. 
 
 In the context of CDS and CDNSKEY records, DNSSEC algorithm 0 is defined
 to mean that the entire DS RRset MUST be removed. The contents of the
-CDS or CDNSKEY RRset MUST contain one RR and only contain the fixed
+CDS or CDNSKEY RRset MUST contain one RR and only contain the exactly the 
 fields as shown below.
 {style="format %d"}
 1.    CDS 0 0 0
 2.    CDNSKEY 0 3 0
 
 The keying material payload is represented by a single 0. This record
-is signed in the same way as regular CDS/CDNSKEY RRsets are signed.
+is signed in the same way as regular CDS/CDNSKEY RRset's are signed.
+This is a change in format from strict interpretation of [@RFC7344] and may
+cause problems with some deployed software. 
 
 Strictly speaking the CDS record could be "CDS X 0 X" as only the
 DNSKEY algorithm is what signals the DELETE operation, but for clarity
@@ -234,8 +236,9 @@ the value 3 in second field is mandated by RFC4034 section 2.1.2.
 
 Once the parent has verified the CDS/CDNSKEY RRset and it has passed other
 acceptance tests, the parent MUST remove the DS RRset. After waiting a
-sufficient amount of time - depending on the parental TTLs - the child can
+sufficient amount of time - depending on the parental TTL's - the child can
 start the process of turning off DNSSEC.
+
 
 
 # Security considerations
@@ -260,7 +263,7 @@ from a geographically and topologically diverse view. It SHOULD
 also ensure that the zone validates correctly if the parent publishes the
 DS record. A parent zone might also consider sending an email to
 its contact addresses to give the child zone a warning that security
-will be enabled after a certain about of wait time - thus allowing
+will be enabled after a certain amount of wait time - thus allowing
 a child administrator to cancel the request.
 
 # IANA considerations
@@ -270,9 +273,15 @@ Algorithm Numbers"
 
 Algorithm 0 adds a reference to this document.
 
+## Promoting RFC7344 to standards track 
+
+Experience has shown that CDS/CDNSKEY are useful in the deployment of DNSSEC.
+[@RFC7344] was published as Informational, this document elevates RFC7344 to standards track. 
+
 {backmatter}
 
 # Acknowledgements
 
 This document is generated using the mmark tool that Miek Gieben has developed.
-
+We thank number of people that have provided feedback and useful comments including
+Bob Harold, John Levine, Matthijs Mekking, Dan York, 
