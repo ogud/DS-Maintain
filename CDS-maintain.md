@@ -39,7 +39,7 @@ multiple unrelated parties. Some of these parties, such as the DNS operator, mig
 not even be known by all organizations involved. The inability to
 disable DNSSEC via in-band signalling is seen as a problem
 or liability that prevents some DNSSEC adoption at large scale. This
-document adds a method for in-band signalling of this DNSSEC status changes.
+document adds a method for in-band signalling of these DNSSEC status changes.
 
 Initial trust is considered in general to be a hard technical problem, this document sets forth
 reasonable policies that clarify and simplify the initial acceptance policy.
@@ -48,14 +48,15 @@ reasonable policies that clarify and simplify the initial acceptance policy.
 
 # Introduction
 
-CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust anchors,
-this is one method to maintain delegations that can be used when the DNS
+CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust anchors.
+This is one method to maintain delegations that can be used when the DNS
 operator has no other way to inform the parent that changes are needed.
-[@!RFC7344] contains no "delete" signal for the child to tell the parent that
-it wants to remove the DNSSEC security for its domain.
 
-[@!RFC7344] did not include a method for the Initial Trust establishment and
+[@!RFC7344] is lacking two different options for full automated operation to be possible. 
+Firstly it did not define a method for the Initial Trust establishment and
 left it to each parent to come up with an acceptance policy.
+Secondly it did not provide a "delete" signal for the child to tell the parent that
+it wants to remove the DNSSEC security for its domain.
 
 ## Removing a DS Record
 
