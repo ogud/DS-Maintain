@@ -1,7 +1,7 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY"
 % abbrev = "DS-maintain-ds"
 % category = "std"
-% docName = "draft-ietf-dnsop-maintain-ds-03aa"
+% docName = "draft-ietf-dnsop-maintain-ds-03ab"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
@@ -36,7 +36,7 @@ addresses both these omissions.
 
 Changing a domain's DNSSEC status can be a complicated matter involving
 multiple unrelated parties. Some of these parties, such as the DNS operator, might 
-not even be known by all organizations involved. The inability to
+not even be known by all the organizations involved. The inability to
 disable DNSSEC via in-band signalling is seen as a problem
 or liability that prevents some DNSSEC adoption at large scale. This
 document adds a method for in-band signalling of these DNSSEC status changes.
@@ -48,7 +48,7 @@ reasonable policies that clarify and simplify the initial acceptance policy.
 
 # Introduction
 
-CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust anchors.
+CDS/CDNSKEY [@!RFC7344] records are used to signal changes in trust anchors. 
 This is one method to maintain delegations that can be used when the DNS
 operator has no other way to inform the parent that changes are needed.
 
@@ -57,6 +57,18 @@ Firstly it did not define a method for the Initial Trust establishment and
 left it to each parent to come up with an acceptance policy.
 Secondly it did not provide a "delete" signal for the child to tell the parent that
 it wants to remove the DNSSEC security for its domain.
+
+## Introducing a DS record
+
+The big issue is how a child domain instructs the parent that it
+wants to have a DS record added. This problem can be solved using a
+few simplifying assumptions. This document makes the assumption that
+there are reasonable policies that can be applied and will allow automation
+of trust introduction.
+
+Not being able to enable trust via an easily automated mechanism is
+hindering DNSSEC at scale for DNS hosters that do not have automated
+access to the "registry" of the child zone's parent.
 
 ## Removing a DS Record
 
@@ -78,26 +90,14 @@ The lack of a "remove my DNSSEC" option is cited as a reason why
 some operators cannot deploy DNSSEC, as this is seen as an operational risk.
 
 Turning off DNSSEC reduces the security of the domain and thus should
-only be done carefully, and that decision should be fully under the
+only be done carefully, and that decision SHOULD be fully under the
 child domain's control.
-
-## Introducing a DS record
-
-The converse issue is how a child domain instructs the parent that it
-wants to have a DS record added. This problem can be solved using a
-few simplifying assumptions. This document makes the assumption that
-there are reasonable policies that can be applied and will allow automation
-of trust introduction.
-
-Not being able to enable trust via an easily automated mechanism is
-hindering DNSSEC at scale for DNS hosters that do not have automated
-access to the "registry" of the child zone's parent.
 
 ## Notation
 
 When this document uses the word CDS it implies that the same applies
-to CDNSKEY and vice verse. The only difference between the two
-records is how information is represented.
+to CDNSKEY and vice verse. The only differences between the two
+records is how information is represented, and who calculates the DS digiest.
 
 We use RRR to mean Registry Registrar Registrant in the context of DNS
 domain markets.
@@ -121,17 +121,17 @@ document are to be interpreted as described in [@RFC2119].
 In general there are three operations that a domain wants to influence
 on its parent:
 {style="format %d"}
-1. Roll over KSK, this means updating the DS records in the parent to
+1. Enable DNSSEC validation, i.e. place an initial DS RRset in the parent.
+2. Roll over KSK, this means updating the DS records in the parent to
 reflect the new set of KSK's at the child. This could be an ADD
 operation, a DELETE operation on one or more records while keeping at
 least one DS RR, or a full REPLACE operation.
-2. Turn off DNSSEC validation, i.e. delete all the DS records.
-3. Enable DNSSEC validation, i.e. place an initial DS RRset in the parent.
+3. Turn off DNSSEC validation, i.e. delete all the DS records.
 
-Operation 1 is covered in [@!RFC7344], operations 2 and 3 are defined in this
-document. In many people's minds, those two later operations carry more
-risk than the first one. This document argues that 2 is identical to 1
-and the third one is different (but not that different).
+Operation 2 is covered in [@!RFC7344], operations 1 and 3 are defined in this
+document. In many people's minds, those two operations carry more
+risk than the first one. This document argues that 3 is identical to 2
+and the first one is different (but not that different).
 
 ## The meaning of the CDS RRset
 
