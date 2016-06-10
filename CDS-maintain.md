@@ -1,7 +1,7 @@
 % Title = "Managing DS records from parent via CDS/CDNSKEY"
 % abbrev = "DS-maintain-ds"
 % category = "std"
-% docName = "draft-ietf-dnsop-maintain-ds-03ab"
+% docName = "draft-ietf-dnsop-maintain-ds-03"
 % ipr= "trust200902"
 % area = "Operations"
 % workgroup = "dnsop"
@@ -285,4 +285,5 @@ Experience has shown that CDS/CDNSKEY are useful in the deployment of DNSSEC.
 
 This document is generated using the mmark tool that Miek Gieben has developed.
 We thank number of people that have provided feedback and useful comments including
-Bob Harold, John Levine, Matthijs Mekking, Dan York, 
+Bob Harold, John Levine, Matthijs Mekking, Dan York, Shane Kerr, Jacques Latour. 
+
